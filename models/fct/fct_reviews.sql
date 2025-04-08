@@ -1,7 +1,8 @@
 {{
 config(
-materialized = 'incremental',
-on_schema_change='fail'
+    materialized = 'incremental',
+    unique_key='review_id',
+    on_schema_change='fail'
 )
 }}
 WITH src_reviews AS (
@@ -14,5 +15,12 @@ AS review_id,
 FROM src_reviews
 WHERE review_text is not null
 {% if is_incremental() %}
-AND review_date > (select max(review_date) from {{ this }})
+    {% if var("start_date",False) and ("end_date", False)%}
+        {{log('Loading '~ this ~ 'incrementally (start_date: ' ~ var("start_date") ~ ', end_date:'~ var("end_date")~')', info=True)}}
+        and review_date>= '{{ var("start_date")}}'
+        and review_date< '{{ var("end_date")}}'
+    {%else%}    
+        AND review_date > (select max(review_date) from {{ this }})
+        {{log('Loading '~ this ~ 'incrementally (all missing dates)', info=True)}}
+    {% endif %}    
 {% endif %}
