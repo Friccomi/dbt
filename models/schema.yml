@@ -102,7 +102,12 @@ models:
         test:
           - relationships:
              to: ref('dim_listings_cleansed')  
-             field: listinf_id
+             field: listing_id    
+
+      - name: review_id
+        test:
+           - unique 
+           - not null
 
       - name: reviewer_name
         test: 
@@ -112,3 +117,4 @@ models:
         test: 
           - accepted_values:
               values: ['positive','neutral', negative'] 
+          
